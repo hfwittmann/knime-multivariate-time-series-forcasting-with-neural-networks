@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.knime.org/2008/09/XMLConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.knime.org/2008/09/XMLConfig http://www.knime.org/XMLConfig_2008_09.xsd" key="settings.xml">
+<entry key="node_file" type="xstring" value="settings.xml"/>
+<config key="flow_stack"/>
+<config key="internal_node_subsettings">
+<entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
+</config>
+<config key="model">
+<entry key="sourceCode" type="xstring" value="from timeseries_utils import artificial_data%%00010%%00010# load data%%00010import os%%00010os.chdir('/home/hfwittmann/knime-workspace/multivariate-time-series-forcasting-with-neural-networks-2/')%%00010%%00010# load packages and package-based-functions%%00010import numpy as np%%00010import matplotlib.pyplot as plt%%00010%%00010from timeseries_utils import Configuration, Data%%00010from timeseries_utils import calculateForecastSkillScore%%00010%%00010from sortedcontainers import SortedDict%%00010%%00010%%00010plotname = flow_variables['plotname']%%00010modelname = flow_variables['modelname']%%00010predictionModel = flow_variables['predictionModel']%%00010%%00010%%00010from timeseries_utils import defineFitPredict_ARIMA, defineFitPredict_DENSE, defineFitPredict_LSTM%%00010%%00010DEFINEFITPREDICT = {%%00010'Arima' : defineFitPredict_ARIMA,%%00010'Dense' : defineFitPredict_DENSE,%%00010'LSTM' : defineFitPredict_LSTM%%00010}%%00010%%00010defineFitPredict = DEFINEFITPREDICT[predictionModel]%%00010# defineFitPredict = flow_variables['defineFitPredict']%%00010%%00010C = Configuration()%%00010C.dictionary = eval(flow_variables['Configuration'])%%00010%%00010%%00010%%00010# create data%%00010# # set random seed for reproducibility%%00010np.random.seed(178)%%00010D = Data()%%00010nOfSeries = 7%%00010%%00010artificial_x, artificial_SERIES = artificial_data(nOfPoints = C.dictionary['nOfPoints'], %%00010                                   nOfSeries = nOfSeries, %%00010                                   f_rauschFactor = 0.5)%%00010%%00010%%00010%%00010for S in range(nOfSeries):%%00010    %%00010    signal_S = 'signal' + str(S)%%00010    D.setFollower(signal_S, otherSeries=artificial_SERIES[:,S], otherSeriesName='innovator plus' + signal_S)%%00010%%00010%%00010SERIES_train = D.train(D.SERIES(), Configuration=C)%%00010SERIES_test = D.test(D.SERIES(), Configuration=C)%%00010%%00010VARIABLES_train = D.train(D.VARIABLES(), Configuration=C)%%00010VARIABLES_test = D.test(D.VARIABLES(), Configuration=C)%%00010%%00010#define, fit model; predict with with model%%00010Prediction, Model = defineFitPredict(C=C,%%00010                                     D=D, %%00010                                     VARIABLES_train=VARIABLES_train, %%00010                                     SERIES_train=SERIES_train, %%00010                                     VARIABLES_test=VARIABLES_test,%%00010                                     SERIES_test=SERIES_test)%%00010%%00010# calculate Accuracy : 0% as good as NULL-Hypothesis, 100% is perfect prediction%%00010Skill = calculateForecastSkillScore(actual=SERIES_test, predicted=Prediction, movingAverage=20)%%00010%%00010# plot stuff%%00010f, axarr = plt.subplots(1, 2, sharey=True)%%00010%%00010f.suptitle(predictionModel)%%00010%%00010axarr[0].plot(SERIES_test)%%00010axarr[0].plot(Prediction)%%00010axarr[0].set_title('Series, Prediction vs Time')%%00010axarr[0].set_xlabel('Time')%%00010axarr[0].set_ylabel('Series, Prediction')%%00010%%00010axarr[1].plot(SERIES_test, Prediction, '.')%%00010axarr[1].set_title('Prediction vs Series')%%00010axarr[1].set_xlabel('Series')%%00010axarr[1].set_ylabel('Prediction')%%00010%%00010plt.savefig(plotname + '_1.png', dpi=300)%%00010plt.show()%%00010# end: # plot stuff%%00010%%00010%%00010# second set of plots%%00010f, axarr = plt.subplots(1, D.numberOfSeries(), sharey=True)%%00010%%00010f.suptitle( predictionModel + ', Prediction vs Series')%%00010%%00010seriesTitles = list(D.dictionaryTimeseries.keys())%%00010%%00010x = 1%%00010%%00010%%00010for plotNumber in range(D.numberOfSeries()):%%00010%%00010    seriesNumber = plotNumber%%00010    %%00010    axarr[plotNumber].plot(SERIES_test[:,seriesNumber], Prediction[:,seriesNumber], '.')%%00010#     axarr[plotNumber].plot(SERIES_test[:-x,seriesNumber], Prediction[x:,seriesNumber], '.')%%00010%%00010    if Skill[seriesNumber] &lt; 50:%%00010        axarr[plotNumber].set_title('S. ' + str(Skill[seriesNumber]) + '%', color='red')%%00010    %%00010    if Skill[seriesNumber] &gt; 50:%%00010        axarr[plotNumber].set_title('S. ' + str(Skill[seriesNumber]) + '%', color='green', fontweight='bold')%%00010    %%00010    %%00010    axarr[plotNumber].set_xlabel(seriesTitles[seriesNumber])%%00010    axarr[plotNumber].set_ylabel('Prediction')%%00010    axarr[plotNumber].set_xticklabels([])%%00010%%00010plt.savefig(plotname + '_2.png', dpi=300)%%00010%%00010plt.show()%%00010# end: # second set of plots%%00010%%00010%%00010from pandas import DataFrame%%00010%%00010output_table = DataFrame(Skill, index=seriesTitles, columns=[predictionModel])%%00010"/>
+<entry key="rowLimit" type="xint" value="1000"/>
+<entry key="pythonVersionOption" type="xstring" value="PYTHON3"/>
+<entry key="convertMissingToPython" type="xboolean" value="false"/>
+<entry key="convertMissingFromPython" type="xboolean" value="false"/>
+<entry key="sentinelOption" type="xstring" value="MIN_VAL"/>
+<entry key="sentinelValue" type="xint" value="0"/>
+<entry key="chunkSize" type="xint" value="500000"/>
+</config>
+<entry key="customDescription" type="xstring" value=""/>
+<entry key="state" type="xstring" value="EXECUTED"/>
+<entry key="factory" type="xstring" value="org.knime.python2.nodes.source.Python2SourceNodeFactory"/>
+<entry key="node-name" type="xstring" value="Python Source"/>
+<entry key="node-bundle-name" type="xstring" value="KNIME Python nodes"/>
+<entry key="node-bundle-symbolic-name" type="xstring" value="org.knime.python2.nodes"/>
+<entry key="node-bundle-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+<entry key="node-bundle-version" type="xstring" value="3.5.2.v201802051356"/>
+<entry key="node-feature-name" type="xstring" value="KNIME Python Integration"/>
+<entry key="node-feature-symbolic-name" type="xstring" value="org.knime.features.python2.feature.group"/>
+<entry key="node-feature-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
+<entry key="node-feature-version" type="xstring" value="3.5.2.v201802051356"/>
+<config key="factory_settings"/>
+<entry key="name" type="xstring" value="Python Source"/>
+<entry key="hasContent" type="xboolean" value="true"/>
+<entry key="isInactive" type="xboolean" value="false"/>
+<config key="ports">
+<config key="port_1">
+<entry key="index" type="xint" value="1"/>
+<entry key="port_spec_class" type="xstring" value="org.knime.core.data.DataTableSpec"/>
+<entry key="port_object_class" type="xstring" value="org.knime.core.node.BufferedDataTable"/>
+<entry key="port_object_summary" type="xstring" value="Rows: 7, Cols: 1"/>
+<entry key="port_dir_location" type="xstring" value="port_1"/>
+</config>
+</config>
+<config key="filestores">
+<entry key="file_store_location" type="xstring" isnull="true" value=""/>
+<entry key="file_store_id" type="xstring" value="78baf570-f262-4188-bbb5-61f1eb2b0d3b"/>
+</config>
+</config>
